@@ -1,0 +1,26 @@
+#DEGs拆分
+setwd("/mnt/raid5/User/bailin/project/241225circRNA/result/DEG/")
+library(readxl)
+DEG_mRNA <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D基础分析/CT_D_vs_AN_D 差异基因.xlsx",sheet = "mRNA p<0.05 FC>1.1")
+DEG_mRNA <- DEG_mRNA[,4:8]
+write.csv(DEG_mRNA,"DEG_mRNA.csv")
+DEG_lncRNA <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D基础分析/CT_D_vs_AN_D 差异基因.xlsx",sheet = "LncRNA p<0.05 FC>1.1")
+DEG_lncRNA <- DEG_lncRNA[,4:8]
+write.csv(DEG_lncRNA,"DEG_lncRNA.csv")
+DEG_circRNA <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D基础分析/CT_D_vs_AN_D 差异基因.xlsx",sheet = "circRNA p<0.05 FC>1.1")
+DEG_circRNA <- DEG_circRNA[,4:8]
+write.csv(DEG_circRNA,"DEG_circRNA.csv")
+
+#差异基因火山图
+library(ggVolcano)
+EPC <- read.csv("D:/acv/240601糖尿病足/result/240819DEG/EC_case_control_diff_genes_filter_q0.05.csv")
+EPC <- add_regulate(EPC, log2FC_name = "avg_log2FC",
+                     fdr_name = "p_val_adj",log2FC = 1, fdr = 0.05)
+table(EPC$regulate)
+p1 <- ggvolcano(EPC, x = "log2FoldChange", y = "padj",
+                fills = c("#3FA2F6","#e94234"),
+                colors = c("#3FA2F6","#e94234"),
+                label = "X", label_number = 10, output = FALSE)
+p1
+#cluster
+
