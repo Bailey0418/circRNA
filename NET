@@ -1,0 +1,32 @@
+setwd("/mnt/raid5/User/bailin/project/241225circRNA/result/NET/")
+#差异表达的基因列表
+DEG_mRNA <- read.csv("/mnt/raid5/User/bailin/project/241225circRNA/result/DEG+ENRICH/DEG_mRNA.csv",row.names = 1)
+DEG_lncRNA <- read.csv("/mnt/raid5/User/bailin/project/241225circRNA/result/DEG+ENRICH/DEG_lncRNA.csv",row.names = 1)
+DEG_miRNA <- read.csv("/mnt/raid5/User/bailin/project/241225circRNA/result/DEG+ENRICH/DEG_miRNA.csv",row.names = 1)
+DEG_circRNA <- read.csv("/mnt/raid5/User/bailin/project/241225circRNA/result/DEG+ENRICH/DEG_circRNA.csv",row.names = 1)
+#lncRNA-miRNA靶向网络筛选
+library(readxl)
+lncRNA_miRNA <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D深入分析/1_差异lncRNA_miRNA靶向性预测/lncRNA_miRNA_target.xlsx",sheet = "miranda 预测")
+lncRNA_miRNA_filter <- as.data.frame(lncRNA_miRNA[which(lncRNA_miRNA$Scores>150&lncRNA_miRNA$Energy<20),])
+nrow(lncRNA_miRNA_filter)
+write.csv(lncRNA_miRNA_filter,"lncRNA_miRNA_filter.csv")
+
+#circRNA-miRNA靶向网络筛选
+circRNA_miRNA <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D深入分析/2_差异circRNA_miRNA靶向性预测/circRNA_miRNA_target.xlsx",sheet = "miranda 预测")
+circRNA_miRNA_filter <- as.data.frame(circRNA_miRNA[which(circRNA_miRNA$Scores>150&circRNA_miRNA$Energy<20),])
+nrow(circRNA_miRNA_filter)
+write.csv(circRNA_miRNA_filter,"circRNA_miRNA_filter.csv")
+
+#pcg-pcg网络筛选
+pcg_pcg <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D深入分析/5_全局信号转导网络 Global_Signal_Transduction_Network/Global Signal Transduction Network.xlsx",sheet = "基因相互作用关系")
+write.csv(pcg_pcg,"pcg_pcg.csv")
+
+#lnc-pcg-circ共表达网络筛选
+coexp <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D深入分析/6_共表达调控网络 Coexpression Network（mRNA-lncRNA）/Coexpression Network.xlsx",sheet = "共表达correlation关系")
+coexp_filter <- coexp[which(abs(coexp$Relation>0.99)&coexp$P.Value<0.01),]
+nrow(coexp_filter)
+write.csv(coexp_filter,"coexp_filter.csv")
+
+#lnc-pathway网络筛选
+lnc_path <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D深入分析/7_LncRNA对Pathway的调控网络 LncRNA Target Pathway Network/LncRNA Target Pathway Network.xlsx",sheet = "LncRNA Target Pathway Network")
+write.csv(lnc_path,"lnc_path.csv")
