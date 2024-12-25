@@ -13,14 +13,77 @@ write.csv(DEG_circRNA,"DEG_circRNA.csv")
 
 #差异基因火山图
 library(ggVolcano)
-EPC <- read.csv("D:/acv/240601糖尿病足/result/240819DEG/EC_case_control_diff_genes_filter_q0.05.csv")
-EPC <- add_regulate(EPC, log2FC_name = "avg_log2FC",
-                     fdr_name = "p_val_adj",log2FC = 1, fdr = 0.05)
-table(EPC$regulate)
-p1 <- ggvolcano(EPC, x = "log2FoldChange", y = "padj",
-                fills = c("#3FA2F6","#e94234"),
-                colors = c("#3FA2F6","#e94234"),
+library(ggplot2)
+DEG_circRNA <- add_regulate(DEG_circRNA, log2FC_name = "FC",
+                     fdr_name = "P.Value",log2FC = 1.1, fdr = 0.05)
+colnames(DEG_circRNA)[5] <- "geneName"
+p1 <- ggvolcano(DEG_circRNA, x = "log2FoldChange", y = "padj",
+                fills = c("lightblue","lightcoral"),
+                colors = c("lightblue","lightcoral"),
                 label = "X", label_number = 10, output = FALSE)
-p1
-#cluster
+ggsave("circRNA.pdf", plot = p1, height = 5, width = 5)
+#GO功能富集
+library(forcats)
+library(ggplot2)
+GO_CC <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D深入分析/3_功能富集分析 GO_Enrichment_Analysis/1_GO_Enrichment_Analysis(Cellular_Component).xlsx", sheet = "Down_GO_Enrichment")
+GO_CC_filter <- GO_CC[which(GO_CC$p_value<0.01),]
+nrow(GO_CC_filter)
+GO_CC_filter$ONTOLOGY <- "CC"
 
+GO_DOWN <- as.data.frame(rbind(GO_BP_filter,GO_CC_filter,GO_MF_filter))
+nrow(GO_DOWN)
+colnames(GO_DOWN)[4] <- "Count"
+colnames(GO_DOWN)[2] <- "Description"
+rownames(GO_DOWN) <- GO_DOWN$GO_ID
+GO_DOWN$GeneRatio <- GO_DOWN$Count / GO_DOWN$Population_mapped_id
+p2 <- ggplot(GO_DOWN,aes(x=GeneRatio,y=fct_reorder(Description, GeneRatio)))+#将term顺序按照GeneRatio进行排序
+  #分面
+  geom_point(aes(size=Count,fill=p_value),
+             shape=21,
+             color='black')+
+  facet_grid(ONTOLOGY~.,
+             scale='free_y',
+             space = 'free_y'
+  )+
+  #修改气泡图颜色
+  scale_fill_gradient(low='#E27371',high = '#5D82A7')+
+  #标题修改
+  labs(title='GO Enrichment',
+       y='GO term',
+       x='GeneRatio')+
+  guides(fill=guide_colorbar(reverse = T,order=1))+
+  theme_bw()#主题
+ggsave("GO_DOWN.pdf",plot = p2,height = 8, width = 12)
+
+#KEGG
+KEGG_UP <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D深入分析/4_信号通路富集分析 Pathway_Enrichment_Analysis/1_Pathway_Enrichment_Analysis.xlsx", sheet = "Up_Pathway_Enrichment")
+KEGG_UP_filter <- KEGG_UP[which(KEGG_UP$p_value<0.05),]
+KEGG_DOWN <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D深入分析/4_信号通路富集分析 Pathway_Enrichment_Analysis/1_Pathway_Enrichment_Analysis.xlsx", sheet = "Down_Pathway_Enrichment")
+KEGG_DOWN_filter <- KEGG_DOWN[which(KEGG_DOWN$p_value<0.05),]
+KEGG_UP_filter$ONTOLOGY <- "Up"
+KEGG_DOWN_filter$ONTOLOGY <- "Down"
+KEGG_filter <- as.data.frame(rbind(KEGG_UP_filter, KEGG_DOWN_filter))
+nrow(KEGG_filter)
+colnames(KEGG_filter)[4] <- "Count"
+colnames(KEGG_filter)[2] <- "Description"
+rownames(KEGG_filter) <- KEGG_filter$pathway_id
+KEGG_filter$GeneRatio <- KEGG_filter$Count / KEGG_filter$population_mapped_id
+
+p3 <- ggplot(KEGG_filter,aes(x=GeneRatio,y=fct_reorder(Description, GeneRatio)))+#将term顺序按照GeneRatio进行排序
+  #分面
+  geom_point(aes(size=Count,fill=p_value),
+             shape=21,
+             color='black')+
+  facet_grid(ONTOLOGY~.,
+             scale='free_y',
+             space = 'free_y'
+  )+
+  #修改气泡图颜色
+  scale_fill_gradient(low='#E27371',high = '#5D82A7')+
+  #标题修改
+  labs(title='KEGG Enrichment',
+       y='KEGG term',
+       x='GeneRatio')+
+  guides(fill=guide_colorbar(reverse = T,order=1))+
+  theme_bw()#主题
+ggsave("KEGG.pdf",plot = p3,height = 8, width = 12)
