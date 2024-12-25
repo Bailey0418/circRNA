@@ -1,5 +1,5 @@
 #DEGs拆分
-setwd("/mnt/raid5/User/bailin/project/241225circRNA/result/DEG/")
+setwd("/mnt/raid5/User/bailin/project/241225circRNA/result/DEG+ENRICH/")
 library(readxl)
 DEG_mRNA <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D基础分析/CT_D_vs_AN_D 差异基因.xlsx",sheet = "mRNA p<0.05 FC>1.1")
 DEG_mRNA <- DEG_mRNA[,4:8]
@@ -10,18 +10,21 @@ write.csv(DEG_lncRNA,"DEG_lncRNA.csv")
 DEG_circRNA <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D基础分析/CT_D_vs_AN_D 差异基因.xlsx",sheet = "circRNA p<0.05 FC>1.1")
 DEG_circRNA <- DEG_circRNA[,4:8]
 write.csv(DEG_circRNA,"DEG_circRNA.csv")
-
+DEG_miRNA <- read_excel("/mnt/raid5/User/bailin/project/241225circRNA/data/CT_D_vs_AN_D基础分析/CT_D_vs_AN_D 差异基因.xlsx",sheet = "small_RNA p<0.05 FC>1.1")
+DEG_miRNA <- DEG_miRNA[which(DEG_miRNA$biotype == "Precursor_microRNA"),]
+DEG_miRNA <- DEG_miRNA[,4:8]
+write.csv(DEG_miRNA,"DEG_miRNA.csv")
 #差异基因火山图
 library(ggVolcano)
 library(ggplot2)
-DEG_circRNA <- add_regulate(DEG_circRNA, log2FC_name = "FC",
+DEG_miRNA <- add_regulate(DEG_miRNA, log2FC_name = "FC",
                      fdr_name = "P.Value",log2FC = 1.1, fdr = 0.05)
-colnames(DEG_circRNA)[5] <- "geneName"
-p1 <- ggvolcano(DEG_circRNA, x = "log2FoldChange", y = "padj",
+colnames(DEG_miRNA)[5] <- "geneName"
+p1 <- ggvolcano(DEG_miRNA, x = "log2FoldChange", y = "padj",
                 fills = c("lightblue","lightcoral"),
                 colors = c("lightblue","lightcoral"),
                 label = "X", label_number = 10, output = FALSE)
-ggsave("circRNA.pdf", plot = p1, height = 5, width = 5)
+ggsave("miRNA.pdf", plot = p1, height = 5, width = 5)
 #GO功能富集
 library(forcats)
 library(ggplot2)
